@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+// Message representing a public key.
+message CAPublicKey {
+    string n = 1;
+    string d = 2;
+}
+
+// Message representing a certificate issued by the CA.
+message Certificate {
+    string id = 1;            // Client ID
+    string n = 2;     // Public key in PEM format
+    string e = 3;     // Public key in PEM format
+    int64 timestamp = 4;      // Timestamp when the certificate was issued
+    int64 duration = 5;       // Duration of validity in seconds
+    string caId = 6;          // ID of the certificate authority
+    string signature = 7;      // Signature of the certificate data by CA's private key
+}
+
+// Message representing a request from a client to register with the CA.
+message RegisterClientRequest {
+    string clientId = 1;      // Client ID
+    string n = 2;  // Public key of the client
+    string e = 3;  // Public key of the client
+}
+
+// Message representing a request from a client to obtain its certificate.
+message CertificateRequest {
+    string clientId = 1;      // Client ID
+}
+
+// Message representing a request from a client to verify a certificate.
+message CertificateVerifyRequest {
+    Certificate certificate = 1;  // Certificate to be verified
+}
+
+// Message representing a response containing the result of certificate verification.
+message CertificateVerifyResponse {
+    bool isValid = 1;          // Whether the certificate is valid or not
+}
+
+// Message representing a request from a client to obtain the public key of the CA.
+message CAPublicKeyRequest {
+    string clientId = 1;   
+}
+
+message RegisterClientResponse{
+    bool success = 1;
+}
+  
+// Define the RPC service for Certificate Authority (CA)
+service CAService {
+    // RPC method for client registration with the CA
+    rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse);
+
+    // RPC method for client to request its certificate from the CA
+    rpc RequestCertificate(CertificateRequest) returns (Certificate);
+
+    // RPC method for client to request Public Key of CA
+    rpc RequestCAPublicKey(CAPublicKeyRequest) returns (CAPublicKey);
+
+    // RPC method for client to verify a certificate
+    rpc VerifyCertificate(CertificateVerifyRequest) returns (CertificateVerifyResponse);
+}
+
+service MessageExchangeService {
+    rpc ReceiveEncryptedMessage(EncryptedMessage) returns (Acknowledgement) {}
+}
+
+message EncryptedMessage {
+    string message = 1;
+}
+
+message Acknowledgement {
+    string response = 1;
+}  
